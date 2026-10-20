@@ -16,6 +16,19 @@ st.set_page_config(
 
 db.init_db()
 
+# TEMPORARY: test Supabase connection
+with st.expander("Supabase connection test"):
+    if st.button("Test Supabase connection"):
+        try:
+            result = db.test_supabase_connection()
+            st.success("Connected to Supabase successfully!")
+            st.write("Cities table is accessible.")
+            st.write(result)
+        except Exception as error:
+            st.error("Connection test failed.")
+            st.caption(f"Error type: {type(error).__name__}")
+
+
 # -------------------- TRANSLATIONS --------------------
 
 TEXT = {
