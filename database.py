@@ -94,3 +94,26 @@ def get_products():
 if __name__ == "__main__":
     init_db()
     print("StyleMind AI database created successfully!")
+
+import streamlit as st
+from supabase import create_client
+
+
+def get_supabase_client():
+    """Create a Supabase client using Streamlit secrets."""
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets["SUPABASE_KEY"]
+
+    return create_client(url, key)
+
+
+def test_supabase_connection():
+    """Test read access to the cities table."""
+    client = get_supabase_client()
+    result = (
+        client.table("cities")
+        .select("id, name")
+        .limit(1)
+        .execute()
+    )
+    return result.data
