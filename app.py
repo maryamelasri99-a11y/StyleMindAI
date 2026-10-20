@@ -1,7 +1,5 @@
 
 import json
-import urllib.request
-import urllib.error
 import streamlit as st
 import database as db
 
@@ -157,19 +155,15 @@ t = TEXT[lang]
 # -------------------- DATABASE --------------------
 
 def load_products():
-    """Read available products from the SQLite database."""
     products = []
 
     for row in db.get_products():
         product = dict(row)
-
-        # Adapt database column names to the original interface.
         product["image"] = product.get("image_url", "")
         product["size"] = product.get("sizes", "")
         product["shop_name"] = product.get("shop_name", "")
         product["shop_address"] = product.get("shop_address", "")
         product["shop_phone"] = product.get("shop_phone", "")
-
         products.append(product)
 
     return products
@@ -420,10 +414,7 @@ with nav2:
         st.rerun()
 
 with nav3:
-    if st.button(
-        f'{t["cart"]} ({cart_count()})',
-        use_container_width=True,
-    ):
+    if st.button(f'{t["cart"]} ({cart_count()})', use_container_width=True):
         go_to("Cart")
         st.rerun()
 
@@ -503,10 +494,7 @@ if st.session_state.page == "Shop":
             if search and search not in searchable:
                 continue
 
-            if (
-                category != t["all"]
-                and category != product.get("category", "")
-            ):
+            if category != t["all"] and category != product.get("category", ""):
                 continue
 
             filtered.append(product)
@@ -514,10 +502,7 @@ if st.session_state.page == "Shop":
         if sort_option == t["low"]:
             filtered.sort(key=lambda p: float(p["price"]))
         elif sort_option == t["high"]:
-            filtered.sort(
-                key=lambda p: float(p["price"]),
-                reverse=True,
-            )
+            filtered.sort(key=lambda p: float(p["price"]), reverse=True)
 
         st.write("")
         st.markdown("### NEW SEASON / EVERYDAY ESSENTIALS")
@@ -540,18 +525,14 @@ if st.session_state.page == "Shop":
                                 {product.get("category", "").upper()} /
                                 {product.get("color", "").upper()}
                             </div>
-                            <div class="product-name">
-                                {product["name"]}
-                            </div>
+                            <div class="product-name">{product["name"]}</div>
                             <div class="product-meta">
                                 Sizes: {product.get("size") or "Not specified"}
                             </div>
                             <div class="product-meta">
                                 SHOP: {product.get("shop_name") or "Local shop"}
                             </div>
-                            <div class="price">
-                                {money(product["price"])}
-                            </div>
+                            <div class="price">{money(product["price"])}</div>
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -668,7 +649,7 @@ elif st.session_state.page == "Product":
                 st.success("Added to cart ✓")
 
 # ==================================================
-# AI STYLIST
+# AI STYLIST — GROQ API
 # ==================================================
 
 elif st.session_state.page == "Stylist":
@@ -699,76 +680,101 @@ elif st.session_state.page == "Stylist":
         value=st.session_state.stylist_question,
         height=120,
         placeholder="I like black clothes and oversized fits...",
+        key="stylist_input",
     )
 
     if st.button(t["send"], type="primary", use_container_width=True):
         if not question.strip():
             st.warning("Write a question first.")
+
         else:
-            st.session_state.stylist_question = question
-            products = load_products()
+            try:
+                api_key = st.secrets["GROQ_API_KEY"]
 
-            inventory = [
-                {
-                    "name": p["name"],
-                    "category": p.get("category", ""),
-                    "price_MAD": p["price"],
-                    "color": p.get("color", ""),
-                    "sizes": p.get("size", ""),
-                    "style": p.get("style", ""),
-                    "shop": p.get("shop_name", ""),
-                }
-                for p in products
-            ]
+                if not api_key:
+                    st.error("GROQ_API_KEY is empty in Streamlit Secrets.")
+                    st.stop()
 
-            prompt = f"""
-You are StyleMind, a friendly streetwear stylist for a local fashion
-marketplace in Tetouan, Morocco.
+                from groq import Groq
 
-Reply in the same language as the customer. Suggest practical outfits
-using ONLY the products in the inventory below. Never invent products,
-prices, sizes, shops, or availability. If the inventory is empty or
-nothing matches, say so clearly. Prices are in MAD.
+                st.session_state.stylist_question = question
+                products = load_products()
 
-INVENTORY:
+                inventory = [
+                    {
+                        "name": p["name"],
+                        "category": p.get("category", ""),
+                        "price_MAD": p["price"],
+                        "color": p.get("color", ""),
+                        "sizes": p.get("size", ""),
+                        "style": p.get("style", ""),
+                        "shop": p.get("shop_name", ""),
+                    }
+                    for p in products
+                ]
+
+                prompt = f"""
+You are StyleMind, a friendly streetwear stylist for a local
+fashion marketplace in Tetouan, Morocco.
+
+Reply in the same language as the customer.
+Be helpful, clear, creative, and practical.
+Recommend products from the inventory when they fit the request.
+Never invent product names, prices, sizes, shops, or availability.
+If no listed products match, say so honestly and give general styling
+advice without pretending those items are available in the store.
+Prices are in Moroccan dirhams (MAD).
+
+AVAILABLE INVENTORY:
 {json.dumps(inventory, ensure_ascii=False)}
 
 CUSTOMER REQUEST:
 {question}
 """
 
-            try:
-                payload = json.dumps({
-                    "model": "qwen2.5:1.5b",
-                    "prompt": prompt,
-                    "stream": False,
-                }).encode("utf-8")
-
-                request = urllib.request.Request(
-                    "http://localhost:11434/api/generate",
-                    data=payload,
-                    headers={"Content-Type": "application/json"},
-                    method="POST",
-                )
+                client = Groq(api_key=api_key)
 
                 with st.spinner("Your stylist is thinking..."):
-                    with urllib.request.urlopen(request, timeout=120) as response:
-                        result = json.loads(
-                            response.read().decode("utf-8")
-                        )
+                    response = client.chat.completions.create(
+                        model="llama-3.3-70b-versatile",
+                        messages=[
+                            {
+                                "role": "system",
+                                "content": (
+                                    "You are StyleMind, a friendly personal "
+                                    "streetwear stylist. Reply in the "
+                                    "customer's language. Be practical and "
+                                    "never fabricate store inventory."
+                                ),
+                            },
+                            {
+                                "role": "user",
+                                "content": prompt,
+                            },
+                        ],
+                        temperature=0.7,
+                        max_tokens=900,
+                    )
 
-                st.session_state.stylist_answer = result.get(
-                    "response",
-                    "Sorry, I couldn't create an outfit right now.",
-                )
+                answer = response.choices[0].message.content
 
-            except (urllib.error.URLError, TimeoutError, OSError):
                 st.session_state.stylist_answer = (
-                    "I couldn't connect to Ollama. Make sure Ollama is "
-                    "running and qwen2.5:1.5b is installed."
+                    answer or "Sorry, I couldn't create an outfit right now."
                 )
+
+            except KeyError:
+                st.error(
+                    "GROQ_API_KEY is missing. Add it in Streamlit Cloud "
+                    "under Manage app → Settings → Secrets."
+                )
+
             except Exception as error:
-                st.session_state.stylist_answer = f"Something went wrong: {error}"
+                st.session_state.stylist_answer = ""
+                st.error(
+                    "The AI Stylist could not get a response from Groq. "
+                    "Check your API key, model availability, and app logs."
+                )
+                st.caption(f"Error type: {type(error).__name__}")
 
     if st.session_state.stylist_answer:
         st.divider()
@@ -885,9 +891,7 @@ elif st.session_state.page == "Add Items":
     )
     st.title(t["add_items"])
 
-    st.caption(
-        "Add a shop first, then list its clothes and accessories."
-    )
+    st.caption("Add a shop first, then list its clothes and accessories.")
 
     shops = load_shops()
 
