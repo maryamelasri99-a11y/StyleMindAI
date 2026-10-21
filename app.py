@@ -265,40 +265,64 @@ def show_product_image(product, use_container_width=True):
 
 st.markdown(
     """
-    <style>
+    
+<style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    :root {
+        --burgundy: #651F35;
+        --beige: #F1E7D5;
+        --sage: #879681;
+        --dark: #30262A;
+        --cream: #FFFAF2;
+        --border: #D9C8B5;
+    }
 
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
     }
 
     .stApp {
-        background: #0b0b0b;
-        color: #f5f5f5;
+        background-color: var(--beige);
+        background-image:
+            linear-gradient(45deg, rgba(101,31,53,0.025) 25%, transparent 25%, transparent 75%, rgba(101,31,53,0.025) 75%),
+            linear-gradient(-45deg, rgba(135,150,129,0.035) 25%, transparent 25%, transparent 75%, rgba(135,150,129,0.035) 75%);
+        background-size: 36px 36px;
+        color: var(--dark);
     }
 
     [data-testid="stHeader"] {
-        background: #0b0b0b;
+        background: rgba(241,231,213,0.95);
     }
 
     [data-testid="stSidebar"] {
-        background: #111111;
+        background: var(--burgundy);
     }
 
-    h1, h2, h3, p, label {
-        color: #f5f5f5;
+    [data-testid="stSidebar"] * {
+        color: var(--beige);
+    }
+
+    h1, h2, h3 {
+        color: var(--burgundy);
+        font-weight: 800;
+    }
+
+    p, label, .stMarkdown {
+        color: var(--dark);
     }
 
     .brand {
-        font-size: 35px;
+        font-size: 38px;
         font-weight: 900;
-        letter-spacing: 5px;
+        letter-spacing: 6px;
         text-align: center;
-        padding: 15px 0 0 0;
+        color: var(--burgundy);
+        padding: 18px 0 0 0;
     }
 
     .tagline {
-        color: #a3a3a3;
+        color: var(--sage);
         text-align: center;
         letter-spacing: 3px;
         font-size: 11px;
@@ -308,13 +332,16 @@ st.markdown(
     .hero {
         padding: 60px 25px;
         margin: 20px 0 30px 0;
-        background: linear-gradient(135deg, #222222, #101010 70%);
-        border: 1px solid #303030;
+        background:
+            linear-gradient(135deg, rgba(101,31,53,0.96), rgba(69,35,47,0.96));
+        border: 3px double var(--sage);
         text-align: center;
-        border-radius: 5px;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(60,35,35,0.10);
     }
 
     .hero h1 {
+        color: var(--beige);
         font-size: clamp(30px, 5vw, 58px);
         font-weight: 900;
         letter-spacing: 2px;
@@ -322,85 +349,110 @@ st.markdown(
     }
 
     .hero p {
-        color: #bdbdbd;
+        color: var(--beige);
         letter-spacing: 1px;
     }
 
     .product-card {
-        padding: 12px 2px 15px 2px;
-        border-bottom: 1px solid #333333;
-        margin-bottom: 10px;
+        padding: 14px;
+        background: rgba(255,250,242,0.8);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin-bottom: 14px;
     }
 
     .product-meta {
-        color: #a3a3a3;
+        color: #657360;
         font-size: 11px;
         letter-spacing: 1px;
         margin-top: 7px;
     }
 
     .product-name {
+        color: var(--burgundy);
         font-size: 17px;
         font-weight: 700;
         margin-top: 8px;
     }
 
     .price {
+        color: var(--burgundy);
         font-size: 16px;
-        font-weight: 700;
+        font-weight: 800;
         margin-top: 9px;
     }
 
     .section-label {
         font-size: 12px;
-        color: #a3a3a3;
+        color: var(--sage);
         letter-spacing: 3px;
         margin-bottom: 5px;
     }
 
     div.stButton > button {
-        border-radius: 2px;
-        border: 1px solid #666666;
-        background: #111111;
-        color: white;
+        border-radius: 8px;
+        border: 1px solid var(--burgundy);
+        background: var(--cream);
+        color: var(--burgundy);
         font-weight: 700;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
         min-height: 42px;
+        transition: all 0.2s ease;
     }
 
     div.stButton > button:hover {
-        border-color: white;
+        border-color: var(--sage);
         color: white;
-        background: #292929;
+        background: var(--sage);
     }
 
     div.stButton > button[kind="primary"] {
-        background: white;
-        color: black;
-        border-color: white;
+        background: var(--burgundy);
+        color: var(--beige);
+        border-color: var(--burgundy);
     }
 
     div.stButton > button[kind="primary"]:hover {
-        background: #dddddd;
-        color: black;
+        background: var(--sage);
+        border-color: var(--sage);
+        color: white;
+    }
+
+    [data-testid="stTextInput"] input,
+    [data-testid="stTextArea"] textarea {
+        background: var(--cream);
+        color: var(--dark);
+        border-color: var(--sage);
+        border-radius: 8px;
+    }
+
+    [data-testid="stSelectbox"] div[data-baseweb="select"] {
+        background: var(--cream);
+        border-radius: 8px;
     }
 
     [data-testid="stImage"] img {
-        border-radius: 3px;
+        border-radius: 10px;
+    }
+
+    [data-testid="stExpander"] {
+        background: rgba(255,250,242,0.75);
+        border: 1px solid var(--border);
+        border-radius: 10px;
     }
 
     hr {
-        border-color: #333333;
+        border-color: var(--border);
     }
 
     .footer {
         text-align: center;
-        color: #777777;
+        color: var(--sage);
         font-size: 11px;
         letter-spacing: 2px;
         padding: 30px 0;
     }
-    </style>
+</style>
     """,
     unsafe_allow_html=True,
 )
