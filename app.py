@@ -516,6 +516,72 @@ div.stButton > button:hover {
     margin-top: 10px;
 }
 
+/* HANOUTI AI STYLIST */
+
+.stylist-hero {
+    background: linear-gradient(135deg, #651F35, #45232F);
+    border: 3px double #879681;
+    border-radius: 16px;
+    padding: 34px 24px;
+    text-align: center;
+    margin: 12px 0 24px;
+    box-shadow: 0 8px 24px rgba(60,35,35,0.10);
+}
+
+.stylist-hero .eyebrow {
+    color: #BFCAB8;
+    font-size: 11px;
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+}
+
+.stylist-hero h2 {
+    color: #F1E7D5;
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 900;
+    margin: 0 0 12px;
+}
+
+.stylist-hero p {
+    color: #F1E7D5;
+    font-size: 15px;
+    margin: 0;
+}
+
+.stylist-tip {
+    background: #E0E5D9;
+    border: 1px solid #879681;
+    border-radius: 10px;
+    padding: 14px;
+    color: #30262A;
+    min-height: 76px;
+    margin-bottom: 12px;
+}
+
+.stylist-tip strong {
+    color: #651F35;
+}
+
+.stylist-result {
+    background: #FFFAF2;
+    border: 1px solid #879681;
+    border-left: 5px solid #651F35;
+    border-radius: 12px;
+    padding: 18px;
+    margin-top: 18px;
+}
+
+.stylist-result-title {
+    color: #651F35;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.stylist-result p {
+    color: #30262A;
+}
+
 </style>
     """,
     unsafe_allow_html=True,
@@ -803,51 +869,105 @@ elif st.session_state.page == "Product":
                 add_to_cart(product["id"], selected_size, quantity)
                 st.success("Added to cart ✓")
 
+
 # ==================================================
-# AI STYLIST — GROQ API
+# HANOUTI AI STYLIST — GROQ API
 # ==================================================
 
 elif st.session_state.page == "Stylist":
 
     st.markdown(
-        '<div class="section-label">YOUR PERSONAL FASHION ASSISTANT</div>',
+        """
+        <div class="stylist-hero">
+            <div class="eyebrow">✿ HANOUTI PERSONAL STYLIST ✿</div>
+            <h2>Find Your Perfect Outfit</h2>
+            <p>
+                من حانوت لحانوت، ستايل مغربي واحد.
+                <br>
+                Tell us your vibe. We'll help you style it.
+            </p>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
-    st.title("Meet your AI Stylist 🖤")
+    st.markdown("### 🌿 What's your style today?")
     st.write(
-        "Tell me what you like, where you're going, "
-        "or which pieces you want to style together."
+        "Describe your look, your occasion, your favorite colors, "
+        "or your budget. Your stylist will help you build an outfit."
     )
 
     example_col1, example_col2 = st.columns(2)
 
     with example_col1:
-        st.caption("• Build me a black streetwear outfit.")
-        st.caption("• What should I wear for a casual date?")
+        st.markdown(
+            """
+            <div class="stylist-tip">
+                <strong>✿ STREETWEAR</strong><br>
+                Black oversized outfit with sneakers
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            """
+            <div class="stylist-tip">
+                <strong>✿ EVERYDAY LOOK</strong><br>
+                Comfortable, simple and stylish
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     with example_col2:
-        st.caption("• Style an oversized hoodie.")
-        st.caption("• Give me a minimal outfit on a budget.")
+        st.markdown(
+            """
+            <div class="stylist-tip">
+                <strong>✿ SPECIAL OCCASION</strong><br>
+                Help me choose an outfit for going out
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            """
+            <div class="stylist-tip">
+                <strong>✿ BUDGET LOOK</strong><br>
+                Create a look within my budget in MAD
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     question = st.text_area(
-        t["ask"],
+        "DESCRIBE YOUR OUTFIT",
         value=st.session_state.stylist_question,
         height=120,
-        placeholder="I like black clothes and oversized fits...",
+        placeholder=(
+            "Example: I want a beige and sage green outfit, "
+            "oversized style, under 500 MAD..."
+        ),
         key="stylist_input",
     )
 
-    if st.button(t["send"], type="primary", use_container_width=True):
+    if st.button(
+        "✿ FIND MY OUTFIT",
+        type="primary",
+        use_container_width=True,
+    ):
         if not question.strip():
-            st.warning("Write a question first.")
+            st.warning("Describe your style first 🌿")
 
         else:
             try:
                 api_key = st.secrets["GROQ_API_KEY"]
 
                 if not api_key:
-                    st.error("GROQ_API_KEY is empty in Streamlit Secrets.")
+                    st.error(
+                        "GROQ_API_KEY is empty in Streamlit Secrets."
+                    )
                     st.stop()
 
                 from groq import Groq
@@ -869,16 +989,16 @@ elif st.session_state.page == "Stylist":
                 ]
 
                 prompt = f"""
-You are HANOUTI, a friendly streetwear stylist for a local
-fashion marketplace in Tetouan, Morocco.
+You are HANOUTI, a friendly personal fashion stylist
+for a Moroccan fashion marketplace.
 
 Reply in the same language as the customer.
-Be helpful, clear, creative, and practical.
-Recommend products from the inventory when they fit the request.
+Be helpful, stylish, creative, and practical.
+Suggest complete outfits when possible.
+Recommend products from the available inventory when relevant.
 Never invent product names, prices, sizes, shops, or availability.
-If no listed products match, say so honestly and give general styling
-advice without pretending those items are available in the store.
-Prices are in Moroccan dirhams (MAD).
+If no products match, say so honestly and give general styling advice.
+All prices are in Moroccan dirhams (MAD).
 
 AVAILABLE INVENTORY:
 {json.dumps(inventory, ensure_ascii=False)}
@@ -889,7 +1009,9 @@ CUSTOMER REQUEST:
 
                 client = Groq(api_key=api_key)
 
-                with st.spinner("Your stylist is thinking..."):
+                with st.spinner(
+                    "🌿 Your HANOUTI stylist is creating your look..."
+                ):
                     response = client.chat.completions.create(
                         model="openai/gpt-oss-120b",
                         messages=[
@@ -897,9 +1019,9 @@ CUSTOMER REQUEST:
                                 "role": "system",
                                 "content": (
                                     "You are HANOUTI, a friendly personal "
-                                    "streetwear stylist. Reply in the "
-                                    "customer's language. Be practical and "
-                                    "never fabricate store inventory."
+                                    "fashion stylist. Reply in the customer's "
+                                    "language. Be practical and never invent "
+                                    "store inventory."
                                 ),
                             },
                             {
@@ -914,7 +1036,8 @@ CUSTOMER REQUEST:
                 answer = response.choices[0].message.content
 
                 st.session_state.stylist_answer = (
-                    answer or "Sorry, I couldn't create an outfit right now."
+                    answer
+                    or "Sorry, I couldn't create an outfit right now."
                 )
 
             except KeyError:
@@ -932,8 +1055,16 @@ CUSTOMER REQUEST:
                 st.caption(f"Error type: {type(error).__name__}")
 
     if st.session_state.stylist_answer:
-        st.divider()
-        st.markdown("### YOUR PERSONAL STYLE NOTES")
+        st.markdown(
+            """
+            <div class="stylist-result">
+                <div class="stylist-result-title">
+                    ✿ YOUR PERSONAL STYLE NOTES
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         st.markdown(st.session_state.stylist_answer)
 
 # ==================================================
