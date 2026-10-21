@@ -1,20 +1,22 @@
 
+
 import json
 import streamlit as st
 import database as db
 
 # ==================================================
-# STYLEMIND AI — STREETWEAR STORE
+# HANOUTI — MODERN MOROCCAN MARKETPLACE
 # ==================================================
 
 st.set_page_config(
-    page_title="StyleMind AI",
-    page_icon="🖤",
+    page_title="HANOUTI | Moroccan Marketplace",
+    page_icon="🪬",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
 
 db.init_db()
+
 
 with st.expander("Supabase products test"):
     if st.button("Test product table"):
