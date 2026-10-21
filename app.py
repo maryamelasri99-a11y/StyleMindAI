@@ -487,7 +487,7 @@ div.stButton > button:hover {
 
 # -------------------- HEADER --------------------
 
-st.markdown('<div class="brand">STYLEMIND</div>', unsafe_allow_html=True)
+st.markdown('<div class="brand">HANOUTI</div>', unsafe_allow_html=True)
 st.markdown(
     '<div class="tagline">STREETWEAR · SELF-EXPRESSION · AI</div>',
     unsafe_allow_html=True,
@@ -703,7 +703,7 @@ elif st.session_state.page == "Product":
 
         with info_col:
             st.markdown(
-                f'<div class="section-label">STYLEMIND / '
+                f'<div class="section-label">HANOUTI / '
                 f'{product.get("category", "").upper()}</div>',
                 unsafe_allow_html=True,
             )
@@ -822,7 +822,7 @@ elif st.session_state.page == "Stylist":
                 ]
 
                 prompt = f"""
-You are StyleMind, a friendly streetwear stylist for a local
+You are HANOUTI, a friendly streetwear stylist for a local
 fashion marketplace in Tetouan, Morocco.
 
 Reply in the same language as the customer.
@@ -849,7 +849,7 @@ CUSTOMER REQUEST:
                             {
                                 "role": "system",
                                 "content": (
-                                    "You are StyleMind, a friendly personal "
+                                    "You are HANOUTI, a friendly personal "
                                     "streetwear stylist. Reply in the "
                                     "customer's language. Be practical and "
                                     "never fabricate store inventory."
@@ -958,7 +958,7 @@ elif st.session_state.page == "Cart":
 
 elif st.session_state.page == "Account":
 
-    st.title("YOUR STYLEMIND ACCOUNT")
+    st.title("YOUR HANOUTI ACCOUNT")
     st.write("Create a demo profile to personalize your experience.")
 
     with st.form("account_form"):
@@ -1132,6 +1132,6 @@ elif st.session_state.page == "Add Items":
 st.divider()
 
 st.markdown(
-    '<div class="footer">STYLEMIND AI · DRESS LIKE YOURSELF</div>',
+    '<div class="footer">HANOUTI AI · DRESS LIKE YOURSELF</div>',
     unsafe_allow_html=True,
 )
