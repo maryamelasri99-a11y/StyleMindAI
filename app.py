@@ -452,6 +452,34 @@ st.markdown(
         letter-spacing: 2px;
         padding: 30px 0;
     }
+    
+/* HANOUTI — make sage green visible */
+
+[data-testid="stVerticalBlockBorderWrapper"] {
+    border-color: #879681;
+}
+
+.product-card {
+    background: #E0E5D9;
+    border: 1px solid #879681;
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.section-label {
+    display: inline-block;
+    background: #879681;
+    color: #FFFFFF;
+    padding: 7px 12px;
+    border-radius: 6px;
+}
+
+div.stButton > button:hover {
+    background: #879681;
+    color: #FFFFFF;
+    border-color: #657360;
+}
+
 </style>
     """,
     unsafe_allow_html=True,
