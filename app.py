@@ -480,6 +480,42 @@ div.stButton > button:hover {
     border-color: #657360;
 }
 
+.hanouti-brand {
+    text-align: center;
+    padding: 22px 10px 28px;
+}
+
+.hanouti-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    color: #651F35;
+    font-size: clamp(30px, 5vw, 44px);
+    font-weight: 900;
+    letter-spacing: 7px;
+}
+
+.brand-flower {
+    color: #879681;
+    font-size: 29px;
+    letter-spacing: 0;
+}
+
+.hanouti-tagline {
+    color: #651F35;
+    font-size: 16px;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+.hanouti-subtitle {
+    color: #879681;
+    font-size: 10px;
+    letter-spacing: 4px;
+    margin-top: 10px;
+}
+
 </style>
     """,
     unsafe_allow_html=True,
