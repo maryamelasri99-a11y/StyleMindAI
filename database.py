@@ -117,3 +117,47 @@ def test_supabase_connection():
         .execute()
     )
     return result.data
+
+def get_supabase_products():
+    """Read published products from Supabase only."""
+    client = get_supabase_client()
+
+    response = (
+        client.table("products")
+        .select(
+            "id, shop_id, name, category, description, "
+            "price_mad, color, sizes, style, image_url, "
+            "stock_quantity, shops(name, address, phone, city_id)"
+        )
+        .eq("is_active", True)
+        .gt("stock_quantity", 0)
+        .execute()
+    )
+
+    products = []
+
+    for item in response.data:
+        shop = item.get("shops") or {}
+        sizes = item.get("sizes") or []
+
+        if isinstance(sizes, list):
+            sizes = ", ".join(str(size) for size in sizes)
+
+        products.append({
+            "id": item["id"],
+            "shop_id": item["shop_id"],
+            "name": item["name"],
+            "category": item.get("category") or "Other",
+            "description": item.get("description") or "",
+            "price": float(item.get("price_mad") or 0),
+            "color": item.get("color") or "",
+            "sizes": sizes,
+            "style": item.get("style") or "",
+            "image_url": item.get("image_url") or "",
+            "in_stock": item.get("stock_quantity", 0) > 0,
+            "shop_name": shop.get("name") or "",
+            "shop_address": shop.get("address") or "",
+            "shop_phone": shop.get("phone") or "",
+        })
+
+    return products
