@@ -179,10 +179,11 @@ t = TEXT[lang]
 
 # -------------------- DATABASE --------------------
 
+
 def load_products():
     products = []
 
-    for row in db.get_products():
+    for row in db.get_supabase_products():
         product = dict(row)
         product["image"] = product.get("image_url", "")
         product["size"] = product.get("sizes", "")
