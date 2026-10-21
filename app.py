@@ -487,11 +487,22 @@ div.stButton > button:hover {
 
 # -------------------- HEADER --------------------
 
-st.markdown('<div class="brand">HANOUTI</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="tagline">STREETWEAR · SELF-EXPRESSION · AI</div>',
-    unsafe_allow_html=True,
-)
+
+st.markdown("""
+<div class="hanouti-brand">
+    <div class="hanouti-title">
+        <span class="brand-flower">✿</span>
+        <span>HANOUTI</span>
+        <span class="brand-flower">✿</span>
+    </div>
+    <div class="hanouti-tagline">
+        من حانوت لحانوت، ستايل مغربي واحد.
+    </div>
+    <div class="hanouti-subtitle">
+        MADE WITH MOROCCAN SOUL
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 language_col, space_col = st.columns([1, 4])
 
