@@ -16,6 +16,18 @@ st.set_page_config(
 
 db.init_db()
 
+with st.expander("Supabase products test"):
+    if st.button("Test product table"):
+        try:
+            products = db.get_supabase_products()
+            st.success(
+                f"Supabase product read successful: "
+                f"{len(products)} published product(s)."
+            )
+        except Exception as error:
+            st.error("Could not read Supabase products.")
+            st.caption(f"Error type: {type(error).__name__}")
+
 # TEMPORARY: test Supabase connection
 with st.expander("Supabase connection test"):
     if st.button("Test Supabase connection"):
