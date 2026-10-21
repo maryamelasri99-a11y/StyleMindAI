@@ -1054,18 +1054,143 @@ CUSTOMER REQUEST:
                 )
                 st.caption(f"Error type: {type(error).__name__}")
 
-    if st.session_state.stylist_answer:
-        st.markdown(
-            """
-            <div class="stylist-result">
-                <div class="stylist-result-title">
-                    ✿ YOUR PERSONAL STYLE NOTES
-                </div>
+   
+if st.session_state.stylist_answer:
+    st.markdown(
+        """
+        <div class="stylist-result">
+            <div class="stylist-result-title">
+                ✿ YOUR PERSONAL STYLE NOTES
             </div>
-            """,
-            unsafe_allow_html=True,
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown(st.session_state.stylist_answer)
+
+    # Find real products matching the customer's request
+    st.markdown("### 🌿 SHOP YOUR LOOK")
+
+    import re
+
+    request = st.session_state.get(
+        "stylist_question", ""
+    ).lower()
+
+    products = load_products()
+
+    # Read a budget such as "under 500 MAD"
+    budget_match = re.search(
+        r"(?:under|below|less than|maximum|max|moins de|"
+        r"تحت|أقل من)\s*(?:mad|dhs?|dh)?\s*(\d+)",
+        request,
+    )
+
+    budget = int(budget_match.group(1)) if budget_match else None
+
+    # Recognize common color names
+    color_groups = {
+        "black": ["black", "noir", "كحل", "سوداء", "أسود"],
+        "white": ["white", "blanc", "بيضاء", "أبيض"],
+        "beige": ["beige", "بيج"],
+        "green": ["green", "vert", "أخضر", "خضر"],
+        "red": ["red", "rouge", "أحمر", "حمراء"],
+        "blue": ["blue", "bleu", "أزرق", "زرقاء"],
+    }
+
+    requested_color = None
+
+    for color, words in color_groups.items():
+        if any(word in request for word in words):
+            requested_color = color
+            break
+
+    matches = []
+
+    for product in products:
+        price = float(
+            product.get("price", product.get("price_mad", 0)) or 0
         )
-        st.markdown(st.session_state.stylist_answer)
+
+        if budget is not None and price > budget:
+            continue
+
+        product_color = str(product.get("color", "")).lower()
+
+        if requested_color:
+            color_words = color_groups[requested_color]
+
+            # Don't show products explicitly listed in another color.
+            if product_color and not any(
+                word in product_color for word in color_words
+            ):
+                continue
+
+        matches.append(product)
+
+    if not matches:
+        st.info(
+            "🌿 No matching products are available yet. "
+            "When boutiques publish products matching your request, "
+            "they will appear here automatically."
+        )
+
+    else:
+        st.caption(
+            f"{len(matches)} matching product(s) from HANOUTI boutiques"
+        )
+
+        for product in matches:
+            product_id = product["id"]
+            price = float(
+                product.get("price", product.get("price_mad", 0)) or 0
+            )
+
+            with st.container(border=True):
+                image_col, details_col = st.columns([1, 2])
+
+                with image_col:
+                    show_product_image(product)
+
+                with details_col:
+                    st.markdown(f"**{product['name']}**")
+
+                    shop_name = product.get("shop_name", "")
+                    if shop_name:
+                        st.caption(f"✿ {shop_name}")
+
+                    st.markdown(f"### {money(price)}")
+
+                    sizes_value = product.get("size", "")
+                    if isinstance(sizes_value, list):
+                        sizes = [str(s) for s in sizes_value if str(s).strip()]
+                    else:
+                        sizes = [
+                            s.strip()
+                            for s in str(sizes_value).replace("/", ",").split(",")
+                            if s.strip()
+                        ]
+
+                    if not sizes:
+                        st.caption("Contact the boutique to confirm sizes.")
+                    else:
+                        selected_size = st.selectbox(
+                            "Choose size",
+                            sizes,
+                            key=f"ai_size_{product_id}",
+                        )
+
+                        if st.button(
+                            "✿ ADD TO CART",
+                            key=f"ai_add_{product_id}",
+                            type="primary",
+                            use_container_width=True,
+                        ):
+                            add_to_cart(product_id, selected_size)
+                            st.success(
+                                f"{product['name']} added to your cart!"
+                            )
+
 
 # ==================================================
 # CART
