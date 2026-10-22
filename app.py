@@ -1255,40 +1255,266 @@ elif st.session_state.page == "Cart":
             go_to("Shop")
             st.rerun()
 
+
 # ==================================================
-# ACCOUNT
+# HANOUTI ACCOUNT — LOGIN & REGISTRATION
 # ==================================================
 
 elif st.session_state.page == "Account":
 
-    st.title("YOUR HANOUTI ACCOUNT")
-    st.write("Create a demo profile to personalize your experience.")
+    from datetime import date
+    import re
 
-    with st.form("account_form"):
-        username = st.text_input(
-            t["name"],
-            value=st.session_state.username,
-            placeholder="Your name",
-        )
-
-        submitted = st.form_submit_button(
-            t["save"],
-            use_container_width=True,
-        )
-
-        if submitted:
-            st.session_state.username = username.strip()
-            st.success(t["saved"])
-
-    if st.session_state.username:
-        st.divider()
-        st.markdown(f"### {t['welcome']}, {st.session_state.username} 🖤")
-        st.write(f"Items in your cart: {cart_count()}")
-        st.write(f"Cart total: {money(cart_total())}")
-
-    st.caption(
-        "Demo profile only. Account information is not permanently saved."
+    st.markdown(
+        """
+        <div class="stylist-hero">
+            <div class="eyebrow">✿ WELCOME TO HANOUTI ✿</div>
+            <h2>Your Account</h2>
+            <p>من حانوت لحانوت، ستايل مغربي واحد.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
+
+    # Keep one auth client for this user's Streamlit session.
+    if "hanouti_auth_client" not in st.session_state:
+        st.session_state.hanouti_auth_client = (
+            db.get_supabase_client()
+        )
+
+    auth_client = st.session_state.hanouti_auth_client
+
+    if "hanouti_user" not in st.session_state:
+        st.session_state.hanouti_user = None
+
+    user = st.session_state.hanouti_user
+
+    if user:
+        st.success(f"You're signed in as {user['email']}")
+
+        st.markdown("### 🌿 Your HANOUTI account")
+        st.write(f"Email: {user['email']}")
+
+        if st.button("LOG OUT", type="primary"):
+            try:
+                auth_client.auth.sign_out()
+                st.session_state.hanouti_user = None
+                st.session_state.pop("hanouti_profile", None)
+                st.rerun()
+            except Exception:
+                st.error("Logout failed. Please try again.")
+
+    else:
+        login_tab, signup_tab = st.tabs(
+            ["LOGIN", "CREATE ACCOUNT"]
+        )
+
+        with login_tab:
+            st.markdown("### Welcome back 🤎")
+
+            with st.form("hanouti_login_form"):
+                login_email = st.text_input(
+                    "Email address",
+                    placeholder="you@example.com",
+                )
+
+                login_password = st.text_input(
+                    "Password",
+                    type="password",
+                )
+
+                login_submit = st.form_submit_button(
+                    "LOGIN",
+                    type="primary",
+                    use_container_width=True,
+                )
+
+            if login_submit:
+                if not login_email.strip() or not login_password:
+                    st.warning("Enter your email and password.")
+                else:
+                    try:
+                        result = auth_client.auth.sign_in_with_password(
+                            {
+                                "email": login_email.strip(),
+                                "password": login_password,
+                            }
+                        )
+
+                        if result.user and result.session:
+                            st.session_state.hanouti_user = {
+                                "id": str(result.user.id),
+                                "email": result.user.email,
+                            }
+                            st.success("Welcome back to HANOUTI!")
+                            st.rerun()
+                        else:
+                            st.error(
+                                "Login was unsuccessful. Please try again."
+                            )
+
+                    except Exception:
+                        st.error(
+                            "Could not log in. Check your details "
+                            "and confirm your email if required."
+                        )
+
+        with signup_tab:
+            st.markdown("### Create your account 🌿")
+            st.caption(
+                "You must be at least 18 years old to register."
+            )
+
+            with st.form("hanouti_signup_form"):
+                first_name = st.text_input("First name")
+                last_name = st.text_input("Last name")
+
+                gender = st.selectbox(
+                    "Gender",
+                    ["Female", "Male"],
+                )
+
+                dob = st.date_input(
+                    "Date of birth",
+                    value=date(2000, 1, 1),
+                    min_value=date(1900, 1, 1),
+                    max_value=date.today(),
+                    format="DD/MM/YYYY",
+                )
+
+                signup_email = st.text_input(
+                    "Email address",
+                    placeholder="you@example.com",
+                )
+
+                phone = st.text_input(
+                    "Phone number",
+                    placeholder="+212...",
+                )
+
+                city = st.selectbox(
+                    "City",
+                    [
+                        "Tetouan",
+                        "Tangier",
+                        "Chefchaouen",
+                        "Larache",
+                        "Al Hoceima",
+                        "Other",
+                    ],
+                )
+
+                account_type = st.selectbox(
+                    "Account type",
+                    ["Customer", "Seller"],
+                )
+
+                signup_password = st.text_input(
+                    "Password",
+                    type="password",
+                )
+
+                confirm_password = st.text_input(
+                    "Confirm password",
+                    type="password",
+                )
+
+                signup_submit = st.form_submit_button(
+                    "CREATE MY ACCOUNT",
+                    type="primary",
+                    use_container_width=True,
+                )
+
+            if signup_submit:
+                today = date.today()
+                age = (
+                    today.year - dob.year
+                    - ((today.month, today.day) < (dob.month, dob.day))
+                )
+
+                if not all(
+                    [
+                        first_name.strip(),
+                        last_name.strip(),
+                        signup_email.strip(),
+                        phone.strip(),
+                        city,
+                        signup_password,
+                        confirm_password,
+                    ]
+                ):
+                    st.warning("Please complete every required field.")
+
+                elif age < 18:
+                    st.error("You must be at least 18 years old.")
+
+                elif not re.fullmatch(
+                    r"[^@\s]+@[^@\s]+\.[^@\s]+",
+                    signup_email.strip(),
+                ):
+                    st.error("Enter a valid email address.")
+
+                elif len(signup_password) < 8:
+                    st.error(
+                        "Your password must contain at least 8 characters."
+                    )
+
+                elif signup_password != confirm_password:
+                    st.error("The passwords do not match.")
+
+                else:
+                    try:
+                        result = auth_client.auth.sign_up(
+                            {
+                                "email": signup_email.strip(),
+                                "password": signup_password,
+                                "options": {
+                                    "data": {
+                                        "first_name": first_name.strip(),
+                                        "last_name": last_name.strip(),
+                                        "gender": gender,
+                                        "date_of_birth": dob.isoformat(),
+                                        "phone": phone.strip(),
+                                        "city": city,
+                                        "role": (
+                                            "seller"
+                                            if account_type == "Seller"
+                                            else "customer"
+                                        ),
+                                    }
+                                },
+                            }
+                        )
+
+                        if result.session and result.user:
+                            st.session_state.hanouti_user = {
+                                "id": str(result.user.id),
+                                "email": result.user.email,
+                            }
+                            st.success(
+                                "Your account has been created!"
+                            )
+                            st.rerun()
+
+                        elif result.user:
+                            st.success(
+                                "Almost there! Check your email "
+                                "for the confirmation link, then log in."
+                            )
+
+                        else:
+                            st.info(
+                                "If registration was accepted, check "
+                                "your email for the next step."
+                            )
+
+                    except Exception:
+                        st.error(
+                            "Registration failed. Check your Supabase "
+                            "Auth settings and app logs. If email "
+                            "confirmation is enabled, confirm your email."
+                        )
+
 
 # ==================================================
 # ADD SHOPS AND PRODUCTS
